@@ -1,1 +1,2 @@
 # SF_FINANCE_DEMO
+README.mdに追記
