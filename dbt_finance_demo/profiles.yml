@@ -1,0 +1,9 @@
+dbt_finance_demo:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      role: FINANCE_ADMIN_ROLE
+      warehouse: FINANCE_DEMO_WH
+      database: FINANCE_DEMO_DB
+      schema: PUBLIC
