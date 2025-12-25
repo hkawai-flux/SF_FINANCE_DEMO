@@ -1,0 +1,9 @@
+USER_24_PUBLIC_SF_FINANCE_DEMO_GIT:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      role: FINANCE_ADMIN_ROLE
+      warehouse: FINANCE_DEMO_WH
+      database: FINANCE_DEMO_DB
+      schema: PUBLIC
