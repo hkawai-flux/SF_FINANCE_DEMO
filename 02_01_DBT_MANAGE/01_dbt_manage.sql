@@ -1,0 +1,1 @@
+-- dbt project on Snowflake管理関連
