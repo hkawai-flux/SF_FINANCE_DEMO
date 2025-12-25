@@ -1,20 +1,49 @@
 USE ROLE ACCOUNTADMIN;
+USE DATABASE FINANCE_DEMO_DB;
+USE WAREHOUSE FINANCE_DEMO_WH;
+
+--SHOW SECRETS;
+SHOW API INTEGRATIONS;
+SELECT CURRENT_SCHEMA();
+
 
 -- GitHubのアクセストークンを格納
-CREATE OR REPLACE SECRET my_github_token
+--DROP SECRET PUBLIC.MY_GITHUB_TOKEN_FINANCE_DEMO;
+
+USE SCHEMA INTEGRATIONS;
+CREATE OR REPLACE SECRET MY_GITHUB_TOKEN_FINANCE_DEMO
     TYPE = PASSWORD
-    USERNAME = 'my_github_username'
-    PASSWORD = 'ghp_xxxxxxxxxxxxxxxxx'; -- ここにPATを入れる
+    USERNAME = 'hkawai-flux'
+    PASSWORD = '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'; -- ここにPATを入れる
 
 -- API統合を作成
-CREATE OR REPLACE API INTEGRATION my_git_api_integration
+CREATE OR REPLACE API INTEGRATION MY_GITHUB_API_INTEGRATION_FINANCE_DEMO
     API_PROVIDER = git_https_api
-    API_ALLOWED_PREFIXES = ('https://github.com/my-org') -- 組織やユーザーのURL
-    ALLOWED_AUTHENTICATION_SECRETS = (my_github_token) -- ★ここでSECRETを使用
+    API_ALLOWED_PREFIXES = ('https://github.com/hkawai-flux') -- 組織やユーザーのURL
+    ALLOWED_AUTHENTICATION_SECRETS = (MY_GITHUB_TOKEN_FINANCE_DEMO) -- ★ここでSECRETを使用
     ENABLED = TRUE;
 
 -- Gitリポジトリを作成
-CREATE OR REPLACE GIT REPOSITORY my_repo
-    API_INTEGRATION = my_git_api_integration
-    GIT_CREDENTIALS = my_github_token -- ★重要：プライベートリポジトリの場合は必須
-    ORIGIN = 'https://github.com/my-org/my-project-repo.git'; -- リポジトリURL
+CREATE OR REPLACE GIT REPOSITORY FINANCE_DEMO_REPO
+    API_INTEGRATION = MY_GITHUB_API_INTEGRATION_FINANCE_DEMO
+    GIT_CREDENTIALS = MY_GITHUB_TOKEN_FINANCE_DEMO -- ★重要：プライベートリポジトリの場合は必須
+    ORIGIN = 'https://github.com/hkawai-flux/SF_FINANCE_DEMO.git'; -- リポジトリURL
+
+-- Create NETWORK RULE for external access integration
+
+SHOW NETWORK RULES;
+
+CREATE OR REPLACE NETWORK RULE DBT_NETWORK_RULE
+  MODE = EGRESS
+  TYPE = HOST_PORT
+  -- Minimal URL allowlist that is required for dbt deps
+  VALUE_LIST = (
+    'hub.getdbt.com',
+    'codeload.github.com'
+    );
+
+-- Create EXTERNAL ACCESS INTEGRATION for dbt access to external dbt package locations
+
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION DBT_EXT_ACCESS
+  ALLOWED_NETWORK_RULES = (DBT_NETWORK_RULE)
+  ENABLED = TRUE;
