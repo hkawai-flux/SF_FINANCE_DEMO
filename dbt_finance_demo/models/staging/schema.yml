@@ -19,3 +19,60 @@ models:
         tests:
           - accepted_values:
               values: ['BUY', 'SELL'] 
+
+  # --- 現物 ---
+  - name: stg_stock_cash_orders
+    columns:
+      - name: order_hk
+        tests:
+          - unique
+          - not_null
+      - name: order_status
+        tests:
+          - accepted_values:
+              values: ['COMPLETED', 'CANCELLED', 'OPEN']
+
+  - name: stg_stock_cash_executions
+    columns:
+      - name: execution_hk
+        tests:
+          - unique
+          - not_null
+      - name: quantity
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "> 0" # 約定数量は正の数であるべき
+
+  # --- 信用 ---
+  - name: stg_stock_margin_orders
+    columns:
+      - name: margin_type
+        tests:
+          - accepted_values:
+              values: ['SYSTEM', 'GENERAL'] # 制度信用か一般信用か
+
+  - name: stg_stock_margin_executions
+    columns:
+      - name: interest_rate
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  # --- 預り（残高） ---
+  - name: stg_stock_cash_holdings
+    columns:
+      - name: holding_hk
+        tests:
+          - unique
+          - not_null
+      - name: quantity
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0" # 残高がマイナスは異常
+
+  - name: stg_stock_margin_holdings
+    columns:
+      - name: side
+        tests:
+          - accepted_values:
+              values: ['LONG', 'SHORT']

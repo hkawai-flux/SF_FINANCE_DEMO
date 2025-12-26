@@ -4,6 +4,7 @@ sources:
   - name: finance_raw
     database: FINANCE_DEMO_DB
     schema: RAW
+    description: "国内証券取引の基幹システムから連携されるRAWデータ群"
     tables:
       - name: executions
         description: "証券の約定明細データ（注文が成立した際の情報）"
@@ -27,3 +28,53 @@ sources:
           - name: snapshot_date
             tests:
               - not_null
+
+      # --- 現物取引関連 ---
+      - name: stock_cash_orders
+        description: "現物取引の注文・取引明細"
+        columns:
+          - name: order_id
+            tests:
+              - unique
+              - not_null
+
+      - name: stock_cash_executions
+        description: "現物取引の約定明細"
+        columns:
+          - name: execution_id
+            tests:
+              - unique
+              - not_null
+          - name: order_id
+            tests:
+              - relationships:
+                  to: source('finance_raw', 'stock_cash_orders')
+                  field: order_id
+
+      - name: stock_cash_holdings
+        description: "現物取引の預り明細（残高）"
+
+      # --- 信用取引関連 ---
+      - name: stock_margin_orders
+        description: "信用取引の注文・取引明細"
+        columns:
+          - name: order_id
+            tests:
+              - unique
+              - not_null
+
+      - name: stock_margin_executions
+        description: "信用取引の約定明細"
+        columns:
+          - name: execution_id
+            tests:
+              - unique
+              - not_null
+          - name: order_id
+            tests:
+              - relationships:
+                  to: source('finance_raw', 'stock_margin_orders')
+                  field: order_id
+
+      - name: stock_margin_holdings
+        description: "信用取引の建玉明細（残高）"

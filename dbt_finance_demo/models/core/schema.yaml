@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  # --- Hub Account ---
+  - name: hub_account
+    columns:
+      - name: account_hk
+        tests:
+          - unique
+          - not_null
+
+  # --- Hub Stock ---
+  - name: hub_stock
+    columns:
+      - name: stock_hk
+        tests:
+          - unique
+          - not_null
+
+  # --- Link Order ---
+  - name: link_order_account_stock
+    columns:
+      - name: order_link_hk
+        tests:
+          - unique
+          - not_null
+      - name: account_hk
+        tests:
+          - relationships:
+              to: ref('hub_account')
+              field: account_hk
+      - name: stock_hk
+        tests:
+          - relationships:
+              to: ref('hub_stock')
+              field: stock_hk
+
+  # --- Satellite Order ---
+  - name: sat_order_details
+    columns:
+      - name: order_hk
+        tests:
+          - not_null
+          # Satelliteにあるキーは必ずHubにも存在すべき
+          - relationships:
+              to: ref('hub_order') # または対応するHub
+              field: order_hk
+
+  # --- PIT Account Holdings ---
+  - name: pit_account_holdings
+    tests:
+      - dbt_utils.at_least_one:
+          column_name: account_hk
+    columns:
+      - name: snapshot_date
+        tests:
+          - not_null

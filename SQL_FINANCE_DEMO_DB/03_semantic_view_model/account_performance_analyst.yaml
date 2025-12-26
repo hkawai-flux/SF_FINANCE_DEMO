@@ -1,0 +1,37 @@
+name: account_performance_analysis
+description: "顧客の口座別、日別の現物および信用取引のパフォーマンス分析モデル"
+base_tables:
+  - name: daily_performance
+    database: FINANCE_DEMO_DB
+    schema: SEMANTIC
+    table: MART_DAILY_ACCOUNT_PERFORMANCE
+    description: "日次の口座別資産推移データ"
+    
+    dimensions:
+      - name: snapshot_date
+        expr: snapshot_date
+        description: "集計日"
+        data_type: date
+      - name: account_id
+        expr: account_id
+        description: "顧客の口座番号"
+        data_type: varchar
+      - name: margin_side
+        expr: margin_side
+        description: "信用取引の区分（LONG/SHORT）"
+        data_type: varchar
+
+    measures:
+      - name: total_assets
+        expr: total_net_asset_value
+        description: "純資産合計（現物評価額 + 信用評価損益）"
+        agg: sum
+        default_format: "¥#,##0"
+      - name: cash_market_value
+        expr: cash_market_value
+        description: "現物株式の時価評価額"
+        agg: sum
+      - name: margin_profit_loss
+        expr: margin_unrealized_pnl
+        description: "信用取引の評価損益"
+        agg: sum
