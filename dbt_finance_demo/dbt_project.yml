@@ -1,19 +1,28 @@
-name: dbt_finance_demo
-version: 1.0.0
+name: 'dbt_finance_demo'
+version: '1.0.0'
 config-version: 2
-profile: dbt_finance_demo
-model-paths:
-  - models
-analysis-paths:
-  - analyses
-test-paths:
-  - tests
-seed-paths:
-  - seeds
-macro-paths:
-  - macros
-snapshot-paths:
-  - snapshots
+
+profile: 'dbt_finance_demo'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
 models:
-  dbt_finance_demo:
-    +materialized: view
+  dbt_finance_demo: # ここは必ず最上部の name: と一致させる
+    staging:
+      +schema: staging
+      +materialized: view
+    core:
+      +schema: core
+      +materialized: table
+    semantic:
+      +schema: semantic
+      +materialized: table
