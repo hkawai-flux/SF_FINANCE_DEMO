@@ -10,6 +10,7 @@ renamed as (
         account_id,
         symbol as stock_symbol,
         side as trade_side,
+        'BUY' as trade_type,
         quantity as trade_quantity,
         price as trade_price,
         execution_at as executed_at,

@@ -1,9 +1,15 @@
+# profiles.yml
 dbt_finance_demo:
-  target: dev
+  target: STAGING
   outputs:
-    dev:
+    STAGING:
       type: snowflake
+      account: "Flux-SAND-GLOBAL"
+      user: "h.kawai@flux-g.com"
+      authenticator: externalbrowser
+      allow_sso_token_caching: true
       role: FINANCE_ADMIN_ROLE
       warehouse: FINANCE_DEMO_WH
       database: FINANCE_DEMO_DB
-      schema: PUBLIC
+      schema: STAGING
+      threads: 4

@@ -16,13 +16,13 @@ clean-targets:
   - "dbt_packages"
 
 models:
-  dbt_finance_demo: # ここは必ず最上部の name: と一致させる
+  dbt_finance_demo:
     staging:
-      +schema: staging
+      +schema: STAGING
       +materialized: view
     core:
-      +schema: core
+      +schema: CORE
       +materialized: table
     semantic:
-      +schema: semantic
+      +schema: SEMANTIC
       +materialized: table

@@ -1,4 +1,6 @@
 
+##dbt環境接続##
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 .\venv\Scripts\Activate.ps1
+cd .\dbt_finance_demo
