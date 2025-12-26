@@ -1,0 +1,14 @@
+#dbt project on Snowflake管理関連
+
+debug:
+    dbt debug
+
+run:
+    dbt run --select xxxxx
+
+test:
+    dbt test
+
+document:
+    dbt docs generate
+    dbt docs serve

@@ -1,0 +1,22 @@
+name: account_performance_semantic_model
+description: "口座ごとの運用パフォーマンスを分析するためのモデル"
+base_table:
+  database: FINANCE_DEMO_DB
+  schema: SEMANTIC
+  table: VW_ACCOUNT_PERFORMANCE
+dimensions:
+  - name: account_id
+    description: "顧客の口座ID"
+    data_type: varchar
+  - name: stock_symbol
+    description: "銘柄コード"
+    data_type: varchar
+measures:
+  - name: total_market_value
+    description: "現在の時価総額の合計"
+    expr: estimated_market_value
+    agg: sum
+  - name: performance_rate
+    description: "運用損益率（％）"
+    expr: profit_loss_percentage
+    agg: avg
