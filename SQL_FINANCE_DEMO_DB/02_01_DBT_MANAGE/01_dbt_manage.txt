@@ -1,5 +1,17 @@
 #dbt project on Snowflake管理関連
 
+##dbt環境接続##
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+.\venv\Scripts\Activate.ps1
+cd .\dbt_finance_demo
+
+
+##コンポーネント##
+pip install "snowflake-connector-python[secure-local-storage]"
+
+
+##実行##
 debug:
     dbt debug
 
