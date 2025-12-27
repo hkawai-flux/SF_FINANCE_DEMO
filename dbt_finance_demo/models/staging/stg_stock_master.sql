@@ -1,10 +1,21 @@
 {{ config(materialized='view') }}
 
 select
-    {{ dbt_utils.generate_surrogate_key(['brand_cd']) }} as stock_hk,
-    {{ dbt_utils.generate_surrogate_key(['brand_name', 'market_name', 'sector_name']) }} as stock_hashdiff,
-    *,
-    updated_at as event_at,
+    sha2_binary(brand_cd, 256) as stock_hk,
+    
+    sha2_binary(concat_ws('|', 
+        coalesce(brand_name, ''),
+        coalesce(market_name, ''),
+        coalesce(sector_name, ''),
+        coalesce(country_code, '')
+    ), 256) as stock_hashdiff,
+
+    brand_cd,
+    brand_name,
+    market_name,
+    sector_name,
+    country_code,
+    is_active,
     current_timestamp() as load_date,
-    'MASTER_SYSTEM' as record_source
+    'MASTER_DB' as record_source
 from {{ source('finance_raw', 'stock_master') }}

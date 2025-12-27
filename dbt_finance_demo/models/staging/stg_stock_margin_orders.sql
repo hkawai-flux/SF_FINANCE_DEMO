@@ -1,12 +1,22 @@
 {{ config(materialized='view') }}
 
 select
-    {{ dbt_utils.generate_surrogate_key(['order_id']) }} as order_hk,
-    {{ dbt_utils.generate_surrogate_key(['account_id']) }} as account_hk,
-    {{ dbt_utils.generate_surrogate_key(['brand_cd']) }} as stock_hk,
-    {{ dbt_utils.generate_surrogate_key(['order_quantity', 'order_price', 'margin_type']) }} as order_hashdiff,
-    *,
-    ordered_at as event_at,
+    sha2_binary(order_id, 256) as order_hk,
+    sha2_binary(account_id, 256) as account_hk,
+    sha2_binary(brand_cd, 256) as stock_hk,
+    
+    sha2_binary(concat_ws('|', 
+        coalesce(order_type, ''), -- 新規/返済
+        coalesce(margin_type, ''), -- 新規/返済
+        coalesce(cast(ordered_at as string), '')
+    ), 256) as order_hashdiff,
+
+    order_id,
+    account_id,
+    brand_cd,
+    order_type,
+    margin_type,
+    ordered_at,
     current_timestamp() as load_date,
-    'TRADING_SYSTEM_MARGIN' as record_source
+    'SNOWFLAKE_RAW_MARGIN' as record_source
 from {{ source('finance_raw', 'stock_margin_orders') }}

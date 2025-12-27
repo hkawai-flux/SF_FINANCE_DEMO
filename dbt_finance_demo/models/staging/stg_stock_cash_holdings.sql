@@ -1,12 +1,20 @@
 {{ config(materialized='view') }}
 
 select
-    {{ dbt_utils.generate_surrogate_key(['account_id', 'brand_cd', 'as_of_date']) }} as holding_hk,
-    {{ dbt_utils.generate_surrogate_key(['account_id']) }} as account_hk,
-    {{ dbt_utils.generate_surrogate_key(['brand_cd']) }} as stock_hk,
-    {{ dbt_utils.generate_surrogate_key(['quantity', 'average_cost']) }} as holding_hashdiff,
-    *,
-    as_of_date as event_at,
+    sha2_binary(concat(account_id, brand_cd), 256) as holding_hk,
+    sha2_binary(account_id, 256) as account_hk,
+    sha2_binary(brand_cd, 256) as stock_hk,
+    
+    sha2_binary(concat_ws('|', 
+        coalesce(cast(quantity as string), ''),
+        coalesce(cast(average_cost as string), '')
+    ), 256) as holding_hashdiff,
+
+    account_id,
+    brand_cd,
+    quantity,
+    average_cost,
+    as_of_date,
     current_timestamp() as load_date,
-    'BACKOFFICE_CASH' as record_source
+    'SNOWFLAKE_RAW_CASH' as record_source
 from {{ source('finance_raw', 'stock_cash_holdings') }}

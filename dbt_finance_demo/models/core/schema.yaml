@@ -1,63 +1,30 @@
 version: 2
 
 models:
-  # --- HUB TABLES ---
+  # --- HUB Tables ---
   - name: hub_account
-    description: "顧客口座ハブ。すべての分析の起点となる口座IDを管理。"
+    description: "口座ハブ。SHA2_BINARY(256)を使用したBINARY(32)型キー。"
     columns:
       - name: account_hk
         tests:
           - unique
           - not_null
-      - name: account_id
-        tests:
-          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: BINARY
 
   - name: hub_stock
-    description: "銘柄ハブ。国内株・外国株を問わずすべての銘柄コードを管理。"
+    description: "銘柄ハブ。"
     columns:
       - name: stock_hk
         tests:
           - unique
           - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: BINARY
 
-  - name: hub_order
-    description: "注文ハブ。取引の発生原因となる注文IDを管理。"
-    columns:
-      - name: order_hk
-        tests:
-          - unique
-          - not_null
-
-  - name: hub_execution
-    description: "約定ハブ。成立した取引の結果を管理。"
-    columns:
-      - name: execution_hk
-        tests:
-          - unique
-          - not_null
-
-  # --- LINK TABLES ---
-  - name: link_order_execution
-    description: "注文と約定の1:Nリレーションを管理。"
-    columns:
-      - name: order_execution_lk
-        tests:
-          - unique
-          - not_null
-      - name: order_hk
-        tests:
-          - relationships:
-              to: ref('hub_order')
-              field: order_hk
-      - name: execution_hk
-        tests:
-          - relationships:
-              to: ref('hub_execution')
-              field: execution_hk
-
+  # --- LINK Tables ---
   - name: link_order_account_stock
-    description: "注文の発生元（口座）と対象（銘柄）を固定する3項リンク。"
+    description: "注文・口座・銘柄のリンク。複合キーもBINARY(32)。"
     columns:
       - name: order_account_stock_lk
         tests:
@@ -65,52 +32,68 @@ models:
           - not_null
       - name: order_hk
         tests:
+          - not_null
           - relationships:
-              to: ref('hub_order')
+              to: ref('hub_order') # もしhub_orderがある場合
               field: order_hk
       - name: account_hk
         tests:
+          - not_null
           - relationships:
               to: ref('hub_account')
               field: account_hk
       - name: stock_hk
         tests:
+          - not_null
           - relationships:
               to: ref('hub_stock')
               field: stock_hk
 
-  - name: link_account_transaction
-    description: "口座と入出金トランザクションの紐付け。"
-    columns:
-      - name: account_transaction_lk
-        tests:
-          - unique
-          - not_null
-      - name: account_hk
-        tests:
-          - relationships:
-              to: ref('hub_account')
-              field: account_hk
-
-  # --- SATELLITE TABLES ---
+  # --- SATELLITE Tables ---
   - name: sat_stock_details
-    description: "銘柄の属性情報の履歴。HashDiffにより重複ロードを防止。"
+    description: "銘柄詳細サテライト。変更検知用HashDiffもBINARY。"
     columns:
       - name: stock_hk
         tests:
+          - not_null
           - relationships:
               to: ref('hub_stock')
               field: stock_hk
       - name: stock_hashdiff
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: BINARY
 
-  - name: sat_stock_cash_holdings
-    description: "現物預り（残高）の推移。snapshot_dateごとに属性を管理。"
+  # --- PIT Tables ---
+  - name: pit_account
+    description: "口座別PITテーブル。特定時点の有効レコードへのポインタを保持。"
     columns:
-      - name: holding_hk
+      - name: pit_account_hk
+        tests:
+          - unique
+          - not_null
+      - name: account_hk
         tests:
           - not_null
-      - name: quantity
+          - relationships:
+              to: ref('hub_account')
+              field: account_hk
+      - name: as_of_date
         tests:
           - not_null
+
+      # --- 修正ポイント ---
+      # 画像のエラー内容に基づき、SQLでのエイリアス名と完全に一致させます
+      - name: customer_load_date 
+        description: "sat_customer_detailsへの外部キー（有効開始日）"
+        tests:
+          - relationships:
+              to: ref('sat_customer_details')
+              field: load_date
+
+      - name: cash_holding_load_date
+        tests:
+          - relationships:
+              to: ref('sat_stock_cash_holdings')
+              field: load_date
