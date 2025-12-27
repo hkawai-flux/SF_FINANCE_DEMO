@@ -3,40 +3,6 @@ USE DATABASE FINANCE_DEMO_DB;
 USE WAREHOUSE FINANCE_DEMO_WH;
 USE SCHEMA RAW;
 
--- -- 1. 約定明細 (Trade Executions)
--- -- いつ、どの銘柄を、いくらで、何株売買したか
--- CREATE OR REPLACE TABLE RAW.EXECUTIONS (
---     EXECUTION_ID STRING,
---     ACCOUNT_ID STRING,
---     SYMBOL STRING,
---     SIDE STRING, -- 'BUY' or 'SELL'
---     QUANTITY NUMBER(18,4),
---     PRICE NUMBER(18,4),
---     EXECUTION_AT TIMESTAMP_NTZ,
---     COMMISSION NUMBER(18,2)
--- );
-
--- -- 2. 取引明細 (Account Transactions)
--- -- 入出金や配当金など、現金の動き
--- CREATE OR REPLACE TABLE RAW.TRANSACTIONS (
---     TRANSACTION_ID STRING,
---     ACCOUNT_ID STRING,
---     TRANSACTION_TYPE STRING, -- 'DEPOSIT', 'WITHDRAWAL', 'DIVIDEND', 'TRADE'
---     AMOUNT NUMBER(18,2),
---     CURRENCY STRING,
---     TRANSACTION_DATE DATE
--- );
-
--- -- 3. 預り明細 (Position/Balances)
--- -- 各アカウントが保有している銘柄の残高情報（スナップショット想定）
--- CREATE OR REPLACE TABLE RAW.POSITIONS (
---     SNAPSHOT_DATE DATE,
---     ACCOUNT_ID STRING,
---     SYMBOL STRING,
---     QUANTITY NUMBER(18,4),
---     AVERAGE_COST NUMBER(18,4)
--- );
-
 
 -- 【現物】取引（注文）明細
 CREATE OR REPLACE TABLE STOCK_CASH_ORDERS (
