@@ -4,34 +4,28 @@ sources:
   - name: finance_raw
     database: FINANCE_DEMO_DB
     schema: RAW
-    description: "国内証券取引の基幹システムから連携されるRAWデータ群"
+    description: "国内および外国証券取引、顧客管理、市場データを含む統合RAWデータ群"
     tables:
-      - name: executions
-        description: "証券の約定明細データ（注文が成立した際の情報）"
+      # --- 既存 / 共通 ---
+      - name: customer_profiles
+        description: "CRMシステムから連携される顧客の基本属性および口座区分情報"
         columns:
-          - name: execution_id
+          - name: account_id
             tests:
               - unique
               - not_null
 
-      - name: transactions
-        description: "入出金および売買に伴う現金の取引履歴"
+      - name: stock_master
+        description: "日本株および外国株の銘柄名称、市場、業種、国コードを管理するマスタ"
         columns:
-          - name: transaction_id
+          - name: brand_cd
             tests:
               - unique
               - not_null
 
-      - name: positions
-        description: "顧客の銘柄別残高スナップショット"
-        columns:
-          - name: snapshot_date
-            tests:
-              - not_null
-
-      # --- 現物取引関連 ---
+      # --- 国内現物取引 ---
       - name: stock_cash_orders
-        description: "現物取引の注文・取引明細"
+        description: "国内現物取引の注文・取引明細"
         columns:
           - name: order_id
             tests:
@@ -39,7 +33,7 @@ sources:
               - not_null
 
       - name: stock_cash_executions
-        description: "現物取引の約定明細"
+        description: "国内現物取引の約定明細"
         columns:
           - name: execution_id
             tests:
@@ -52,11 +46,11 @@ sources:
                   field: order_id
 
       - name: stock_cash_holdings
-        description: "現物取引の預り明細（残高）"
+        description: "国内現物取引の預り明細（残高スナップショット）"
 
-      # --- 信用取引関連 ---
+      # --- 国内信用取引 ---
       - name: stock_margin_orders
-        description: "信用取引の注文・取引明細"
+        description: "国内信用取引の注文・取引明細"
         columns:
           - name: order_id
             tests:
@@ -64,7 +58,7 @@ sources:
               - not_null
 
       - name: stock_margin_executions
-        description: "信用取引の約定明細"
+        description: "国内信用取引の約定明細"
         columns:
           - name: execution_id
             tests:
@@ -77,4 +71,44 @@ sources:
                   field: order_id
 
       - name: stock_margin_holdings
-        description: "信用取引の建玉明細（残高）"
+        description: "国内信用取引の建玉明細（残高スナップショット）"
+
+      # --- 外国株取引 ---
+      - name: foreign_stock_orders
+        description: "外国株（米国/香港等）の注文・取引明細。現地通貨ベースの価格情報を保持"
+        columns:
+          - name: order_id
+            tests:
+              - unique
+              - not_null
+
+      - name: foreign_stock_executions
+        description: "外国株取引の約定明細。市場コードおよび通貨コードを保持"
+        columns:
+          - name: execution_id
+            tests:
+              - unique
+              - not_null
+          - name: order_id
+            tests:
+              - relationships:
+                  to: source('finance_raw', 'foreign_stock_orders')
+                  field: order_id
+
+      - name: foreign_stock_holdings
+        description: "外国株の預り明細。現地通貨ベースの取得単価を保持"
+
+      # --- 資金・市場データ ---
+      - name: cash_transactions
+        description: "入金、出金、配当金受取などの現金の動きを記録した明細データ"
+        columns:
+          - name: transaction_id
+            tests:
+              - unique
+              - not_null
+
+      - name: exchange_rates
+        description: "外貨資産の円貨換算に使用する日次為替レート（仲値/TTS/TTB）"
+
+      - name: stock_prices
+        description: "評価損益計算およびパフォーマンス分析に使用する銘柄別の日次終値データ"

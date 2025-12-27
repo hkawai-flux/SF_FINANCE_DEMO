@@ -1,36 +1,31 @@
-{{ config(materialized='incremental', unique_key='order_hk') }}
+{{ config(materialized='incremental', incremental_strategy='merge', unique_key='order_hk') }}
 
-with all_orders as (
-    -- 現物注文からビジネスキーを抽出
-    select 
-        order_hk, 
-        order_id, 
-        load_date, 
-        record_source 
-    from {{ ref('stg_stock_cash_orders') }}
-    
-    union all
-    
-    -- 信用注文からビジネスキーを抽出
-    select 
-        order_hk, 
-        order_id, 
-        load_date, 
-        record_source 
-    from {{ ref('stg_stock_margin_orders') }}
+with union_orders as (
+    -- 国内現物注文
+    select order_hk, order_id, load_date, record_source from {{ ref('stg_stock_cash_orders') }}
+    union
+    -- 国内信用注文
+    select order_hk, order_id, load_date, record_source from {{ ref('stg_stock_margin_orders') }}
+    union
+    -- 外国株注文
+    select order_hk, order_id, load_date, record_source from {{ ref('stg_foreign_stock_orders') }}
 ),
-
 distinct_orders as (
     select
         order_hk,
         order_id,
-        min(load_date) as load_date,
-        min(record_source) as record_source
-    from all_orders
-    group by 1, 2
+        load_date,
+        record_source,
+        row_number() over (partition by order_hk order by load_date asc) as rnum
+    from union_orders
 )
-
-select * from distinct_orders
+select
+    order_hk,
+    order_id,
+    load_date,
+    record_source
+from distinct_orders
+where rnum = 1
 {% if is_incremental() %}
-    where order_hk not in (select order_hk from {{ this }})
+  and order_hk not in (select order_hk from {{ this }})
 {% endif %}

@@ -1,30 +1,32 @@
-{{ config(materialized='incremental', unique_key='account_hk') }}
+{{ config(materialized='incremental', incremental_strategy='merge', unique_key='account_hk') }}
 
-with all_accounts as (
-    -- 現物注文から抽出
-    select account_hk, account_id, load_date, record_source from {{ ref('stg_stock_cash_orders') }}
-    union all
-    -- 信用注文から抽出
-    select account_hk, account_id, load_date, record_source from {{ ref('stg_stock_margin_orders') }}
-    union all
-    -- 現物預りから抽出
-    select account_hk, account_id, load_date, record_source from {{ ref('stg_stock_cash_holdings') }}
-    union all
-    -- 信用預りから抽出
-    select account_hk, account_id, load_date, record_source from {{ ref('stg_stock_margin_holdings') }}
+with union_accounts as (
+    -- 各Stagingからaccount_hkとビジネスキーを抽出
+    select account_hk, account_id, load_date, record_source from {{ ref('stg_customer_profiles') }}
+    union
+    select account_hk, account_id, load_date, record_source from {{ ref('stg_stock_cash_executions') }}
+    union
+    select account_hk, account_id, load_date, record_source from {{ ref('stg_foreign_stock_executions') }}
+    union
+    select account_hk, account_id, load_date, record_source from {{ ref('stg_cash_transactions') }}
 ),
-
 distinct_accounts as (
+    -- ビジネスキーごとに最も古い（最初の）レコードを採用
     select
         account_hk,
         account_id,
-        min(load_date) as load_date,
-        min(record_source) as record_source
-    from all_accounts
-    group by 1, 2
+        load_date,
+        record_source,
+        row_number() over (partition by account_hk order by load_date asc) as rnum
+    from union_accounts
 )
-
-select * from distinct_accounts
+select
+    account_hk,
+    account_id,
+    load_date,
+    record_source
+from distinct_accounts
+where rnum = 1
 {% if is_incremental() %}
-    where account_hk not in (select account_hk from {{ this }})
+  and account_hk not in (select account_hk from {{ this }})
 {% endif %}
