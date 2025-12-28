@@ -2,7 +2,9 @@
 
 select
     holding_hk,
+    account_hk,
     holding_hashdiff,
+    brand_cd,
     quantity,
     average_cost,
     as_of_date,

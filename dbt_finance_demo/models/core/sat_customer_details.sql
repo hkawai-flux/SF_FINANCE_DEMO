@@ -2,6 +2,7 @@
 
 select
     account_hk,
+    account_id,
     customer_hashdiff,
     customer_name,
     customer_type,
