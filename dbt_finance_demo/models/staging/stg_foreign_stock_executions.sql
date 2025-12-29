@@ -4,7 +4,7 @@ select
     sha2_binary(execution_id, 256) as execution_hk,
     sha2_binary(order_id, 256) as order_hk,
     sha2_binary(account_id, 256) as account_hk,
-    sha2_binary(brand_cd, 256) as stock_hk,
+    sha2_binary(brand_cd, 256) as brand_hk,
     
     sha2_binary(concat_ws('|', 
         coalesce(cast(quantity as string), ''),

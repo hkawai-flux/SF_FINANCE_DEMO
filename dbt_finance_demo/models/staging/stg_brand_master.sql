@@ -1,14 +1,14 @@
 {{ config(materialized='view') }}
 
 select
-    sha2_binary(brand_cd, 256) as stock_hk,
+    sha2_binary(brand_cd, 256) as brand_hk,
     
     sha2_binary(concat_ws('|', 
         coalesce(brand_name, ''),
         coalesce(market_name, ''),
         coalesce(sector_name, ''),
         coalesce(country_code, '')
-    ), 256) as stock_hashdiff,
+    ), 256) as brand_hashdiff,
 
     brand_cd,
     brand_name,

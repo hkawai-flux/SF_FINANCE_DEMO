@@ -26,7 +26,7 @@ WITH active_snapshot AS (
     INNER JOIN {{ ref('sat_customer_details') }} sd
         ON p.account_hk = sd.account_hk 
         AND p.customer_load_date = sd.load_date
-    LEFT JOIN {{ ref('sat_stock_cash_holdings') }} sh
+    LEFT JOIN {{ ref('sat_stock_cash_holdings_details') }} sh
         ON p.account_hk = sh.account_hk 
         AND p.cash_holding_load_date = sh.load_date
 )
