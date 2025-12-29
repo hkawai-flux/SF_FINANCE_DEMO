@@ -112,3 +112,10 @@ sources:
 
       - name: stock_prices
         description: "評価損益計算およびパフォーマンス分析に使用する銘柄別の日次終値データ"
+
+      # --- 外国株信用取引 ---
+      - name: foreign_margin_executions
+        description: "外国株信用取引の約定明細。市場コードおよび通貨コードを保持"
+
+      - name: foreign_margin_holdings
+        description: "外国株信用取引の建玉明細（残高スナップショット）"

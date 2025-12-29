@@ -120,6 +120,31 @@ CREATE OR REPLACE TABLE FOREIGN_STOCK_HOLDINGS (
 );
 
 
+-- 外国株信用 約定（履歴）ソース
+CREATE OR REPLACE TABLE RAW.FOREIGN_MARGIN_EXECUTIONS (
+    EXECUTION_ID VARCHAR(64) COMMENT '約定を一意に識別するシステムキー',
+    ACCOUNT_ID VARCHAR(32) COMMENT '顧客を識別する総合口座番号',
+    BRAND_CD VARCHAR(16) COMMENT '銘柄コード（ティッカーシンボル等）',
+    SIDE VARCHAR(10) COMMENT '売買区分：BUY(新規買・返済買) / SELL(新規売・返済売)',
+    EXECUTION_QTY NUMBER(18, 4) COMMENT '約定した数量',
+    EXECUTION_PRICE_LOCAL NUMBER(18, 4) COMMENT '約定単価（現地の取引通貨単位）',
+    EXECUTION_AMOUNT_JPY NUMBER(18, 0) COMMENT '約定代金（円貨換算後の総額）',
+    EXECUTION_TIMESTAMP TIMESTAMP_NTZ COMMENT '約定が成立した日時'
+) COMMENT = '外国株式信用取引の約定（取引履歴）に関するソースデータテーブル';
+
+-- 外国株信用 建玉（残高）ソース
+CREATE OR REPLACE TABLE RAW.FOREIGN_MARGIN_HOLDINGS (
+    ACCOUNT_ID VARCHAR(32) COMMENT '顧客を識別する総合口座番号',
+    BRAND_CD VARCHAR(16) COMMENT '銘柄コード（ティッカーシンボル等）',
+    SIDE VARCHAR(10) COMMENT '建株区分：BUY(買建) / SELL(売建)',
+    QUANTITY NUMBER(18, 4) COMMENT '現在保有している建玉数量',
+    OPEN_PRICE_LOCAL NUMBER(18, 4) COMMENT '建単価（現地の取引通貨単位）',
+    OPEN_PRICE_JPY NUMBER(18, 4) COMMENT '建単価（円貨換算後の単価）',
+    INTEREST_JPY NUMBER(18, 0) COMMENT '建玉発生時から現在までの累積経過金利（円貨）',
+    EXTRACT_DATE TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'ソースシステムからのデータ抽出日時'
+) COMMENT = '外国株式信用取引の建玉（保有残高）に関するソースデータテーブル';
+
+
 -- 【共通】顧客口座情報
 CREATE OR REPLACE TABLE CUSTOMER_PROFILES (
     account_id VARCHAR COMMENT '口座ID',
