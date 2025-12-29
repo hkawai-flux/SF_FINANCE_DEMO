@@ -1,7 +1,7 @@
 {{ config(materialized='incremental', incremental_strategy='merge', unique_key='stock_hk') }}
 
 with union_stocks as (
-    select stock_hk, brand_cd, load_date, record_source from {{ ref('stg_stock_master') }}
+    select stock_hk, brand_cd, load_date, record_source from {{ ref('stg_brand_master') }}
     union
     select stock_hk, brand_cd, load_date, record_source from {{ ref('stg_stock_cash_executions') }}
     union

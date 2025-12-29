@@ -13,14 +13,19 @@ select
         coalesce(cast(execution_date as string), '')
     ), 256) as execution_hashdiff,
 
+    execution_date as base_date,
     execution_id,
     order_id,
     account_id,
     brand_cd,
+    market_code,
+    currency_code,
+    trade_type,
     quantity,
     price,
-    currency_code,
-    execution_date,
+    commission,
+    executed_at,
+    -- メタデータ
     current_timestamp() as load_date,
     'SNOWFLAKE_RAW_FOREIGN' as record_source
 from {{ source('finance_raw', 'foreign_stock_executions') }}

@@ -20,9 +20,18 @@ models:
     staging:
       +schema: STAGING
       +materialized: view
+      +persist_docs:
+        relation: true
+        columns: true
     core:
       +schema: CORE
       +materialized: table
+      +persist_docs:
+        relation: true
+        columns: true
     semantic:
       +schema: SEMANTIC
       +materialized: table
+      +persist_docs:
+        relation: true
+        columns: true

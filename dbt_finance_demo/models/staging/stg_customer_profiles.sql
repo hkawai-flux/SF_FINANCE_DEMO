@@ -10,9 +10,12 @@ select
     ), 256) as customer_hashdiff,
 
     account_id,
+    --address, ※不要カラムのためコメントアウト
     customer_name,
     customer_type,
     segment,
+    updated_at,
+    -- メタデータ
     current_timestamp() as load_date,
     'CRM_SYSTEM' as record_source
 from {{ source('finance_raw', 'customer_profiles') }}

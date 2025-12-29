@@ -16,6 +16,8 @@ select
     sector_name,
     country_code,
     is_active,
+    updated_at,
+    -- メタデータ
     current_timestamp() as load_date,
     'MASTER_DB' as record_source
 from {{ source('finance_raw', 'stock_master') }}

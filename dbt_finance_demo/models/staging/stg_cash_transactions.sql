@@ -11,12 +11,15 @@ select
         coalesce(cast(executed_at as string), '')
     ), 256) as transaction_hashdiff,
 
+    execution_date as base_date,
     transaction_id,
     account_id,
+    currency_code,
     transaction_type,
     amount,
-    currency_code,
+    description,
     executed_at,
+    -- メタデータ
     current_timestamp() as load_date,
     'CASH_MANAGEMENT_SYSTEM' as record_source
 from {{ source('finance_raw', 'cash_transactions') }}
