@@ -1,0 +1,35 @@
+
+INSERT INTO SBI_RAW_VAULT.HUB_ACCOUNT (
+    ACCOUNT_HK,
+    BUTEN_KOUZA,
+    BRANCH_NO,
+    ACCOUNT_NO,
+    LOAD_DATE,
+    RECORD_SOURCE
+)
+SELECT 
+    ACCOUNT_HK,
+    BUTEN_KOUZA,
+    SPLIT_PART(BUTEN_KOUZA, '-', 1) as BRANCH_NO,
+    SPLIT_PART(BUTEN_KOUZA, '-', 2) as ACCOUNT_NO,
+    CURRENT_TIMESTAMP() as LOAD_DATE,
+    RECORD_SOURCE
+FROM (
+    -- すべてのSTGから口座情報を集約
+    SELECT ACCOUNT_HK, BUTEN_KOUZA, RECORD_SOURCE FROM sbi_staging.stg_trade_history_test
+    UNION
+    SELECT ACCOUNT_HK, BUTEN_KOUZA, RECORD_SOURCE FROM sbi_staging.stg_st_sec_test
+    UNION
+    SELECT ACCOUNT_HK, BUTEN_KOUZA, RECORD_SOURCE FROM sbi_staging.stg_bl_int_stock_test
+    UNION
+    SELECT ACCOUNT_HK, BUTEN_KOUZA, RECORD_SOURCE FROM sbi_staging.stg_bl_trust_stock_test
+    UNION
+    SELECT ACCOUNT_HK, BUTEN_KOUZA, RECORD_SOURCE FROM sbi_staging.stg_tmp_tran_trust_stock_test
+) src
+-- すでにHUBに存在するキーは除外
+WHERE NOT EXISTS (
+    SELECT 1 FROM SBI_RAW_VAULT.HUB_ACCOUNT tgt
+    WHERE src.ACCOUNT_HK = tgt.ACCOUNT_HK
+)
+-- 集約後の重複を排除（最初の1件を採用）
+QUALIFY ROW_NUMBER() OVER (PARTITION BY ACCOUNT_HK ORDER BY LOAD_DATE ASC) = 1;

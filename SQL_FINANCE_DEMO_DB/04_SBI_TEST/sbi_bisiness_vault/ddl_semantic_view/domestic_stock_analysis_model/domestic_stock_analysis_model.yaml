@@ -1,0 +1,49 @@
+name: domestic_stock_unified_model
+description: "国内株式（現物・信用）の統合分析モデル。約定および取引履歴を含みます。"
+
+base_tables:
+  - name: bv_daily_execution_metrics
+    database: FINANCE_DEMO_DB
+    schema: SBI_BUSINESS_VAULT
+    description: "国内株式の約定実績。現物と信用の両方を含み、TRADE_TYPEで区別します。"
+
+dimensions:
+  - name: trade_type
+    expr: trade_type
+    description: "取引の種類。'現物' または '信用'。"
+    sample_values: ['現物', '信用']
+  - name: deposit_kbn
+    expr: deposit_kbn
+    description: "預り区分（特定、一般、新NISAなど）。主に現物取引で重要。"
+  - name: unit_s_kbn
+    expr: unit_s_kbn
+    description: "単元株とS株の区分。S株は現物のみ。"
+
+measures:
+  - name: total_exec_amount
+    expr: total_exec_amount
+    description: "約定代金の合計（円）"
+    aggregation: sum
+  - name: active_user_count
+    expr: mkdb_id
+    description: "ユニークな取引顧客数"
+    aggregation: count_distinct
+
+verified_queries:
+  - name: "現物の新NISA利用状況"
+    question: "昨日の現物取引での新NISA約定代金は？"
+    sql: |
+      SELECT SUM(total_exec_amount) 
+      FROM bv_daily_execution_metrics 
+      WHERE trade_type = '現物' 
+        AND deposit_kbn = '新NISA' 
+        AND base_date = CURRENT_DATE() - 1
+
+  - name: "信用の取引規模"
+    question: "信用取引の過去1週間の約定件数推移を教えて"
+    sql: |
+      SELECT base_date, SUM(exec_count) 
+      FROM bv_daily_execution_metrics 
+      WHERE trade_type = '信用' 
+        AND base_date >= DATEADD(day, -7, CURRENT_DATE())
+      GROUP BY base_date ORDER BY base_date

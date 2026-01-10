@@ -1,0 +1,11 @@
+-- 注文ハブテーブル（HUB_ORDER）の定義
+CREATE OR REPLACE TABLE SBI_RAW_VAULT.HUB_ORDER (
+    ORDER_HK BINARY(64) NOT NULL COMMENT '注文ハッシュキー（注文番号-店番口座等）',
+    BUTEN_KOUZA VARCHAR(11) NOT NULL COMMENT '店番-口座番号',
+    ORDER_NO INT NOT NULL COMMENT '注文番号', -- NUMBER(7,0)をINTに変更
+    LOAD_DATE TIMESTAMP_NTZ(9) COMMENT 'ロード日時',
+    RECORD_SOURCE VARCHAR(100) COMMENT 'レコードソース', -- 25から100へ拡張
+    
+    PRIMARY KEY (ORDER_HK)
+) COMMENT = '注文ハブ：国内株式（現物・信用）の注文を一元管理';
+
