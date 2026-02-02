@@ -1,0 +1,27 @@
+dbt_finance_demo:
+  outputs:
+    STAGING:
+      account: Flux-SAND-GLOBAL
+      allow_sso_token_caching: true
+      authenticator: externalbrowser
+      database: FINANCE_DEMO_DB
+      role: FINANCE_ADMIN_ROLE
+      schema: STAGING
+      threads: 4
+      type: snowflake
+      user: h.kawai@flux-g.com
+      warehouse: FINANCE_DEMO_WH
+  target: STAGING
+my_project:
+  outputs:
+    dev:
+      account: Flux-SAND-GLOBAL
+      authenticator: externalbrowser
+      database: FINANCE_DEMO_DB
+      role: FINANCE_ADMIN_ROLE
+      schema: STAGING
+      threads: 4
+      type: snowflake
+      user: h.kawai@flux-g.com
+      warehouse: FINANCE_DEMO_WH
+  target: dev
